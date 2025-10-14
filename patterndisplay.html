@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>High-Precision Pattern Viewer v2</title>
+    <style>
+        body { margin: 0; background-color: #FFFFFF; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #image-container { margin-bottom: 2rem; }
+        #patternImage { image-rendering: pixelated; border: 2px solid #555; background-color: black; }
+        #controls { background-color: #2a2a2a; padding: 1.5rem 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); width: 600px; }
+        .slider-group { display: flex; align-items: center; margin-bottom: 1rem; }
+        .slider-group label { flex-basis: 120px; font-weight: bold; }
+        .slider-group input[type="range"] { flex-grow: 1; margin: 0 1rem; cursor: pointer; }
+        .slider-group span { flex-basis: 80px; font-family: monospace; font-size: 1.1em; text-align: right; }
+        #instructions { font-size: 0.9em; color: #999; margin-top: 1rem; border-top: 1px solid #444; padding-top: 1rem; }
+    </style>
+</head>
+<body>
+    <div id="image-container">
+        <img id="patternImage" src="phone_pattern.png" alt="Ciphertext Pattern">
+    </div>
+    <div id="controls">
+        <!-- Sliders for Coarse Adjustment -->
+        <div class="slider-group">
+            <label for="sizeSlider">Size (Width):</label>
+            <input type="range" id="sizeSlider" min="100" max="800" value="400" step="0.1">
+            <span id="sizeValue">400.0px</span>
+        </div>
+        <div class="slider-group">
+            <label for="aspectRatioSlider">Aspect Ratio:</label>
+            <input type="range" id="aspectRatioSlider" min="0.8" max="1.2" value="1.0" step="0.001">
+            <span id="aspectRatioValue">1.000</span>
+        </div>
+        <!-- Keyboard Instructions -->
+        <div id="instructions">
+            <strong>Fine Control:</strong> Use <strong>Arrow Keys</strong> to adjust size (Up/Down) and aspect ratio (Left/Right).<br>
+            Hold <strong>Shift</strong> + Arrow Key for larger steps.
+        </div>
+    </div>
+    <script>
+        const image = document.getElementById('patternImage');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const aspectRatioSlider = document.getElementById('aspectRatioSlider');
+        const sizeValueSpan = document.getElementById('sizeValue');
+        const aspectRatioValueSpan = document.getElementById('aspectRatioValue');
+
+        function updateImage() {
+            const width = parseFloat(sizeSlider.value);
+            const aspectRatio = parseFloat(aspectRatioSlider.value);
+            const baseHeight = width / 2;
+            const finalHeight = baseHeight * aspectRatio;
+
+            image.style.width = width + 'px';
+            image.style.height = finalHeight + 'px';
+            
+            sizeValueSpan.textContent = width.toFixed(1) + 'px';
+            aspectRatioValueSpan.textContent = aspectRatio.toFixed(3);
+        }
+
+        // --- THE FIX: Keyboard Controls ---
+        document.addEventListener('keydown', (e) => {
+            // Prevent the page from scrolling when using arrow keys
+            e.preventDefault(); 
+            
+            const sizeStep = e.shiftKey ? 1.0 : 0.1;
+            const aspectStep = e.shiftKey ? 0.01 : 0.001;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    sizeSlider.value = parseFloat(sizeSlider.value) + sizeStep;
+                    break;
+                case 'ArrowDown':
+                    sizeSlider.value = parseFloat(sizeSlider.value) - sizeStep;
+                    break;
+                case 'ArrowRight':
+                    aspectRatioSlider.value = parseFloat(aspectRatioSlider.value) + aspectStep;
+                    break;
+                case 'ArrowLeft':
+                    aspectRatioSlider.value = parseFloat(aspectRatioSlider.value) - aspectStep;
+                    break;
+            }
+            // After changing the slider value with the keyboard, update the image.
+            updateImage();
+        });
+
+        sizeSlider.addEventListener('input', updateImage);
+        aspectRatioSlider.addEventListener('input', updateImage);
+        window.onload = updateImage;
+    </script>
+</body>
+</html>
